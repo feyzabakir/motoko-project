@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ICP Alışveriş Uygulaması</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <!-- CSS Reset -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+    </style>
+    <!-- Custom Styles -->
+    <style>
+      body {
+        font-family: "Montserrat", sans-serif;
+        background: linear-gradient(135deg, #d4fc79, #96e6a1);
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      header {
+        background-color: #006d77;
+        padding: 1.5rem;
+        text-align: center;
+        color: #fff;
+      }
+
+      header h1 {
+        font-size: 2.2em;
+        animation: slideIn 1s ease-in-out;
+      }
+
+      main {
+        flex: 1;
+        padding: 2rem;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .form-container {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        animation: fadeIn 1s ease-in-out;
+      }
+
+      .form-container h2 {
+        color: #006d77;
+        margin-bottom: 1rem;
+      }
+
+      .form-container form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .form-container input[type="text"],
+      .form-container input[type="number"] {
+        flex: 1 1 220px;
+        padding: 10px;
+        border: 2px solid #006d77;
+        border-radius: 5px;
+        font-size: 1em;
+        outline: none;
+      }
+
+      .form-container button {
+        padding: 10px 20px;
+        background-color: #006d77;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        font-size: 1em;
+      }
+
+      .form-container button:hover {
+        background-color: #005661;
+      }
+
+      #productList {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+      }
+
+      .product-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+      }
+
+      .product-card:hover {
+        transform: scale(1.05);
+      }
+
+      .product-card h3 {
+        color: #006d77;
+        margin-bottom: 0.5rem;
+        font-size: 1.4em;
+      }
+
+      .product-card p {
+        font-size: 1.1em;
+        color: #555;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>ICP Alışveriş Uygulaması</h1>
+    </header>
+    <main>
+      <div class="form-container">
+        <h2>Ürün Ekle</h2>
+        <form id="addProductForm">
+          <input type="text" id="productName" placeholder="Ürün Adı" required />
+          <input type="number" id="productPrice" placeholder="Fiyat" required />
+          <button type="submit">Ürünü Ekle</button>
+        </form>
+      </div>
+      <div id="productList"></div>
+    </main>
+    <script>
+      let backend;
+
+      async function initApp() {
+        backend = window.ic.shopping_backend;
+        await fetchAndDisplayProducts();
+      }
+
+      async function fetchAndDisplayProducts() {
+        try {
+          const products = await backend.getAllProducts();
+          renderProductList(products);
+        } catch (error) {
+          console.error("Ürünler yüklenemedi:", error);
+        }
+      }
+
+      function renderProductList(products) {
+        const productListElement = document.getElementById("productList");
+        productListElement.innerHTML = products
+          .map(
+            (product) => `
+            <div class="product-card">
+              <h3>${product.name}</h3>
+              <p>Fiyat: ₺${product.price}</p>
+            </div>
+          `
+          )
+          .join("");
+      }
+
+      document.getElementById("addProductForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const name = document.getElementById("productName").value;
+        const price = parseInt(document.getElementById("productPrice").value, 10);
+
+        try {
+          await backend.addProduct(name, price);
+          await fetchAndDisplayProducts();
+          event.target.reset();
+        } catch (error) {
+          console.error("Ürün eklenemedi:", error);
+        }
+      });
+
+      initApp();
+    </script>
+  </body>
+</html>
